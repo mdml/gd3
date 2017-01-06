@@ -149,7 +149,7 @@ function cnaChart(style) {
       var segs = segments.append('rect')
           .attr('fill', function(d){
             if (gd3.color.categoryPalette) return gd3.color.categoryPalette(samplesToTypes[d.sample]);
-            return segmentTypeToColor[samplesToTypes[d.sample]]
+            return segmentTypeToColor[samplesToTypes[d.sample]];
           })
           .attr('width', function(d) {
             return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
@@ -327,6 +327,20 @@ function cnaChart(style) {
           data.sampleTypeToInclude[s] = false;
         });
         updateAllComponents();
+      });
+
+      // Add dispatch for recolor message, which updates dataset segment colors
+      gd3.dispatch.on("recolor.cna", function() {
+        segs.each(function(d) {
+          var dataset = samplesToTypes[d.sample];
+          d3.select(this).transition().duration(1000).style('fill', function () {
+            if(!d.sample || !dataset) {
+              return 'none';
+            } else {
+              return d3.rgb(gd3.color.categoryPalette(dataset));
+            }
+          });
+        })
       });
 
       ////////////////////////////////////////////////////////////////////////////

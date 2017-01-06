@@ -93,6 +93,9 @@ function transcriptChart(style) {
           .enter()
           .append('path')
             .attr('class', 'symbols gd3MutationSymbol')
+            .attr('data-dataset', function(d) {
+              return d.dataset;
+            })
             .attr('d', d3.svg.symbol()
               .type(function(d, i) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
@@ -118,6 +121,9 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
+            .attr('data-dataset', function(d) {
+              return d.dataset;
+            })
             .style('fill', function(d, i) {
               if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
               return sampleTypeToColor[d.dataset];
@@ -732,6 +738,21 @@ function transcriptChart(style) {
         updateTranscript();
       });
     }); // End selection
+
+    // Add support for dataset category recoloring for mutation symbols
+    // TODO debug why this doesn't percolate on-update automatically
+    //      (typically you need to inspect elements to get a refresh)
+    gd3.dispatch.on("recolor.transcript", function() {
+      d3.selectAll('.gd3TranscriptMutations').selectAll("path")
+        .transition().duration(1000)
+        .style('fill', function() {
+          var dataset = d3.select(this).attr('data-dataset');
+          return gd3.color.categoryPalette(dataset);
+        }).style('stroke', function() {
+          var dataset = d3.select(this).attr('data-dataset');
+          return gd3.color.categoryPalette(dataset);
+        });
+    });
   }
 
   chart.showScrollers = function showScrollers(state) {
